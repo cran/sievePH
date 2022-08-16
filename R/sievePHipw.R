@@ -6,7 +6,7 @@ VE <- function(v, alpha, beta, gamma){ 1 - exp(alpha + beta*v + gamma) }
 # in the IPW scenario, using Theorem 1 in Juraska and Gilbert (2013, Biometrics)
 # 'eventTime' is the observed time, defined as the minimum of failure, censoring, and study times
 # 'eventType' is the failure indicator (0 if censored, 1 if failure)
-# 'mark' is a data frame (with the same number of rows as the length of 'eventTime') specifying a multivariate mark (a numeric vector for a univariate mark is allowed), with NA for subjects with find=0.
+# 'mark' is a data frame (with the same number of rows as the length of 'eventTime') specifying a multivariate mark (a numeric vector for a univariate mark is allowed), with NA for subjects with eventType=0.
 # 'tx' is the treatment group indicator (1 if treatment, 0 if control)
 # 'aux' is a data frame of auxiliary covariates
 # 'formulaMiss' is a one-sided formula specifying the logistic regression model for estimating the probability of observing the mark; all variables in the formula except 'tx' must be included in 'aux'
@@ -52,7 +52,7 @@ covEstIPW <- function(eventTime, eventType, mark, tx, aux=NULL, formulaMiss, phi
   eta <- drop(xi(gammaHat)/zeta(gammaHat))
   score3.vect <- function(gamma){ tx.f-eta }
   l.vect <- function(gamma){
-    survprob.vect <- c(1, summary(survfit(Surv(eventTime,eventType)~1))$surv)
+    survprob.vect <- c(1, summary(survfit(Surv(eventTime,eventType)~1), times=sort(eventTime.f))$surv)
     surv.increm <- survprob.vect[-length(survprob.vect)] - survprob.vect[-1]
     eventTime.fMsq <- eventTime.fM[1:m.f,]
     crossprod(eventTime.f>=eventTime.fMsq, surv.increm*(tx.f*exp(gamma*tx.f) - eta*exp(gamma*tx.f))/zeta(gamma))
@@ -238,8 +238,8 @@ densRatioIPW <- function(mark, tx, aux=NULL, formulaMiss){
 #' @param mark either a numeric vector specifying a univariate continuous mark or a data frame specifying a multivariate continuous mark subject to missingness at random. Missing mark values should be set to \code{NA}.
 #' For subjects with \code{eventInd = 0}, the value(s) in \code{mark} should also be set to \code{NA}.
 #' @param tx a numeric vector indicating the treatment group (1 if treatment, 0 if placebo)
-#' @param aux a data frame specifying auxiliary covariates predictive of the probability of observing the mark. The mark missingness model only requires that the auxiliary covariates be observed in
-#' subjects who experienced the event of interest. For subjects with \code{eventInd = 0}, the value(s) in \code{aux} may be set to \code{NA}.
+#' @param aux a data frame specifying auxiliary covariates predictive of the probability of observing the mark. The mark missingness model only requires that the auxiliary covariates be observed in subjects who experienced the event of interest. For subjects with \code{eventInd = 0}, the value(s) in \code{aux} may be set to \code{NA}.
+#' @param strata a numeric vector specifying baseline strata (\code{NULL} by default). If specified, a stratified Cox model is fit for estimating the marginal hazard ratio (i.e., a separate baseline hazard is assumed for each stratum). No stratification is used in estimation of the mark density ratio.
 #' @param formulaMiss a one-sided formula object specifying (on the right side of the \code{~} operator) the linear predictor in the logistic regression model used for predicting the probability of observing
 #' the mark. All terms in the formula except \code{tx} must be evaluable in the data frame \code{aux}.
 #'
@@ -303,7 +303,7 @@ densRatioIPW <- function(mark, tx, aux=NULL, formulaMiss){
 #' @import survival
 #'
 #' @export
-sievePHipw <- function(eventTime, eventInd, mark, tx, aux=NULL, formulaMiss){
+sievePHipw <- function(eventTime, eventInd, mark, tx, aux=NULL, strata=NULL, formulaMiss){
   if (is.numeric(mark)){ mark <- data.frame(mark) }
   if (!is.null(aux)){ if (!is.data.frame(aux)){ stop("'aux' must be a data frame.") } }
 
@@ -319,7 +319,8 @@ sievePHipw <- function(eventTime, eventInd, mark, tx, aux=NULL, formulaMiss){
   dRatio <- densRatioIPW(mark[eventInd==1, ], tx[eventInd==1], aux=auxForEvents, formulaMiss=formulaMiss)
 
   # fit the Cox proportional hazards model to estimate the marginal hazard ratio
-  phReg <- coxph(Surv(eventTime, eventInd) ~ tx)
+  fm.coxph <- as.formula(paste0("Surv(eventTime, eventInd) ~ tx", ifelse(is.null(strata), "", " + strata(strata)")))
+  phReg <- survival::coxph(fm.coxph)
 
   # the estimate of the marginal log hazard ratio
   gammaHat <- phReg$coef
