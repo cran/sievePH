@@ -1,6 +1,7 @@
-4f1bc73a49954f99c4b6fcf43c62aa5d *DESCRIPTION
-5364f10571f08ff359c6d7fc7c0366d5 *NAMESPACE
-d2ffbe99b423fa2e4fcc0c4469ee17fb *NEWS
+5658e0a7c814f1ae840145e3eedbbe68 *DESCRIPTION
+b91907828b7bcac573ef8b39aa27b8ae *NAMESPACE
+c31382ea941279a06c47cea153fe3c15 *NEWS
+62cc329cd86e4c5c3c7713b5fbd93bec *R/ggplot_sieve.R
 969aaf44a64bb531e361e10a8f5a5c22 *R/plot.summary.sievePH.R
 8317feac7a63bd483a357e865139692e *R/sievePH.R
 7b8e9c11d3b020628ef94eecbd02d821 *R/sievePHaipw.R
@@ -9,7 +10,7 @@ be66209833d2184e099ecd0df05a850e *R/summary.sievePH.R
 b7a8a98cd60bc344719798751564c253 *R/testDensRatioGOF.R
 a0ce4dd5943f9972e01704a304817cd8 *R/testIndepTimeMark.R
 fcfa0bc0b376474bdd90907adbfe9485 *README.md
-422ff67120043d0447e38ff716be0f48 *inst/CITATION
+59e0599809f69154c1615b69f45c9356 *man/ggplot_sieve.Rd
 bdeaff860e178ecc7c4edbcce81f7372 *man/plot.summary.sievePH.Rd
 1594e1b56808998472a33b0a9c96e696 *man/sievePH.Rd
 ae0a2bcb3dac546865b362b11e26d4a4 *man/sievePHaipw.Rd
